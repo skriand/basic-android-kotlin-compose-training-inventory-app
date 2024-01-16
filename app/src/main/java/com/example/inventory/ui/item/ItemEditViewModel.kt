@@ -21,14 +21,27 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.inventory.data.ItemsRepository
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel to retrieve and update an item from the [ItemsRepository]'s data source.
  */
 class ItemEditViewModel(
     savedStateHandle: SavedStateHandle,
+    private val itemsRepository: ItemsRepository
 ) : ViewModel() {
+    /*init {
+        viewModelScope.launch {
+            itemUiState = itemsRepository.getItemStream(itemId)
+                .filterNotNull()
+                .first()
+                .toItemUiState(true)
+        }
+    }*/
 
     /**
      * Holds current item ui state
@@ -36,11 +49,38 @@ class ItemEditViewModel(
     var itemUiState by mutableStateOf(ItemUiState())
         private set
 
-    private val itemId: Int = checkNotNull(savedStateHandle[ItemEditDestination.itemIdArg])
+    fun setItemId(itemId: String) {
+        viewModelScope.launch {
+            itemUiState = itemsRepository.getItemStream(itemId.toInt())
+                .filterNotNull()
+                .first()
+                .toItemUiState(true)
+        }
+    }
 
     private fun validateInput(uiState: ItemDetails = itemUiState.itemDetails): Boolean {
         return with(uiState) {
-            name.isNotBlank() && price.isNotBlank() && quantity.isNotBlank()
+            name.isNotBlank() && priceValidator(price) && quantityValidator(quantity) &&
+                    supplier.isNotBlank() && emailValidator(email) && phoneValidator(phone)
+        }
+    }
+
+    fun priceValidator(value: String) = Regex("\\d*\\.?\\d+").matches(value)
+
+    fun quantityValidator(value: String) = Regex("\\d+").matches(value)
+
+    fun emailValidator(email: String) = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+
+    fun phoneValidator(phone: String) = Regex("\\+?[1-9]\\d{7,14}\$").matches(phone)
+
+    fun updateUiState(itemDetails: ItemDetails) {
+        itemUiState =
+            ItemUiState(itemDetails = itemDetails, isEntryValid = validateInput(itemDetails))
+    }
+
+    suspend fun updateItem() {
+        if (validateInput(itemUiState.itemDetails)) {
+            itemsRepository.updateItem(itemUiState.itemDetails.toItem())
         }
     }
 }

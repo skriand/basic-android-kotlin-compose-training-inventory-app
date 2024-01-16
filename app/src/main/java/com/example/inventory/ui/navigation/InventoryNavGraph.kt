@@ -19,11 +19,9 @@ package com.example.inventory.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
 import com.example.inventory.ui.home.HomeDestination
+import com.example.inventory.ui.home.HomeEmptyDestination
+import com.example.inventory.ui.home.HomeEmptyScreen
 import com.example.inventory.ui.home.HomeScreen
 import com.example.inventory.ui.item.ItemDetailsDestination
 import com.example.inventory.ui.item.ItemDetailsScreen
@@ -31,6 +29,10 @@ import com.example.inventory.ui.item.ItemEditDestination
 import com.example.inventory.ui.item.ItemEditScreen
 import com.example.inventory.ui.item.ItemEntryDestination
 import com.example.inventory.ui.item.ItemEntryScreen
+import com.microsoft.device.dualscreen.twopanelayout.Screen
+import com.microsoft.device.dualscreen.twopanelayout.TwoPaneLayoutNav
+import com.microsoft.device.dualscreen.twopanelayout.TwoPaneMode
+import com.microsoft.device.dualscreen.twopanelayout.twopanelayoutnav.composable
 
 /**
  * Provides Navigation graph for the application.
@@ -40,45 +42,70 @@ fun InventoryNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
-    NavHost(
+    TwoPaneLayoutNav(
         navController = navController,
-        startDestination = HomeDestination.route,
+        paneMode = TwoPaneMode.HorizontalSingle,
+        singlePaneStartDestination = HomeDestination.route,
+        pane1StartDestination = HomeDestination.route,
+        pane2StartDestination = HomeEmptyDestination.route,
         modifier = modifier
     ) {
         composable(route = HomeDestination.route) {
             HomeScreen(
-                navigateToItemEntry = { navController.navigate(ItemEntryDestination.route) },
+                navigateToItemEntry = {
+                    navController.navigateTo(
+                        ItemEntryDestination.route,
+                        Screen.Pane2
+                    )
+                },
                 navigateToItemUpdate = {
-                    navController.navigate("${ItemDetailsDestination.route}/${it}")
-                }
+                    navController.navigateTo("${ItemDetailsDestination.route}/${it}", Screen.Pane2)
+                },
+                modifier = Modifier.weight(.45f)
             )
+        }
+        composable(route = HomeEmptyDestination.route) {
+            if (isSinglePane)
+                navController.navigateTo(HomeDestination.route, Screen.Pane1)
+            else
+                HomeEmptyScreen(modifier = Modifier.weight(.55f))
         }
         composable(route = ItemEntryDestination.route) {
             ItemEntryScreen(
-                navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() }
+                navigateBack = { navController.navigateBack() },
+                modifier = Modifier.weight(.55f)
             )
         }
         composable(
             route = ItemDetailsDestination.routeWithArgs,
-            arguments = listOf(navArgument(ItemDetailsDestination.itemIdArg) {
-                type = NavType.IntType
-            })
-        ) {
+        ) { twoPaneBackStack ->
+            // Extracting the argument
+            val itemId =
+                twoPaneBackStack.arguments?.getString(ItemEditDestination.itemIdArg).toString()
+
             ItemDetailsScreen(
-                navigateToEditItem = { navController.navigate("${ItemEditDestination.route}/$it") },
-                navigateBack = { navController.navigateUp() }
+                navigateToEditItem = {
+                    navController.navigateTo(
+                        "${ItemEditDestination.route}/$itemId",
+                        Screen.Pane2
+                    )
+                },
+                navigateBack = { navController.navigateUpTo(HomeEmptyDestination.route) },
+                modifier = Modifier.weight(.55f),
+                itemId = itemId
             )
         }
         composable(
             route = ItemEditDestination.routeWithArgs,
-            arguments = listOf(navArgument(ItemEditDestination.itemIdArg) {
-                type = NavType.IntType
-            })
-        ) {
+        ) { twoPaneBackStack ->
+            // Extracting the argument
+            val itemId =
+                twoPaneBackStack.arguments?.getString(ItemEditDestination.itemIdArg).toString()
+
             ItemEditScreen(
-                navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() }
+                navigateBack = { navController.navigateBack() },
+                modifier = Modifier.weight(.55f),
+                itemId = itemId
             )
         }
     }

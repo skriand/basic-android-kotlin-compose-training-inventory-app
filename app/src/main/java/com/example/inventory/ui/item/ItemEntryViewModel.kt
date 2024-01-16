@@ -21,12 +21,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.inventory.data.Item
+import com.example.inventory.data.ItemsRepository
 import java.text.NumberFormat
 
 /**
  * ViewModel to validate and insert items in the Room database.
  */
-class ItemEntryViewModel : ViewModel() {
+class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewModel() {
 
     /**
      * Holds current item ui state
@@ -45,7 +46,22 @@ class ItemEntryViewModel : ViewModel() {
 
     private fun validateInput(uiState: ItemDetails = itemUiState.itemDetails): Boolean {
         return with(uiState) {
-            name.isNotBlank() && price.isNotBlank() && quantity.isNotBlank()
+            name.isNotBlank() && priceValidator(price) && quantityValidator(quantity) &&
+                    supplier.isNotBlank() && emailValidator(email) && phoneValidator(phone)
+        }
+    }
+
+    fun priceValidator(value: String) = Regex("\\d*\\.?\\d+").matches(value)
+
+    fun quantityValidator(value: String) = Regex("\\d+").matches(value)
+
+    fun emailValidator(email: String) = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+
+    fun phoneValidator(phone: String) = Regex("\\+?[1-9]\\d{7,14}\$").matches(phone)
+
+    suspend fun saveItem() {
+        if (validateInput()) {
+            itemsRepository.insertItem(itemUiState.itemDetails.toItem())
         }
     }
 }
@@ -63,6 +79,9 @@ data class ItemDetails(
     val name: String = "",
     val price: String = "",
     val quantity: String = "",
+    val supplier: String = "",
+    val email: String = "",
+    val phone: String = "",
 )
 
 /**
@@ -74,7 +93,10 @@ fun ItemDetails.toItem(): Item = Item(
     id = id,
     name = name,
     price = price.toDoubleOrNull() ?: 0.0,
-    quantity = quantity.toIntOrNull() ?: 0
+    quantity = quantity.toIntOrNull() ?: 0,
+    supplier = supplier,
+    email = email,
+    phone = phone
 )
 
 fun Item.formatedPrice(): String {
@@ -96,5 +118,18 @@ fun Item.toItemDetails(): ItemDetails = ItemDetails(
     id = id,
     name = name,
     price = price.toString(),
-    quantity = quantity.toString()
+    quantity = quantity.toString(),
+    supplier = supplier,
+    email = email,
+    phone = phone
 )
+
+fun ItemDetails.toFormatedString(): String {
+    return "Item: $name\n" +
+            "Quantity in stock: $quantity\n" +
+            "Price: ${NumberFormat.getCurrencyInstance().format(price.toDoubleOrNull() ?: 0.0)}\n" +
+            "Supplier\n" +
+            "Name: $supplier\n" +
+            "Email: $email\n" +
+            "Phone: $phone\n"
+}
