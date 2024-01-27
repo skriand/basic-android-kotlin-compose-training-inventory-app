@@ -16,9 +16,15 @@
 
 package com.example.inventory.ui.navigation
 
+import android.util.Log
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptionsBuilder
+import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.home.HomeDestination
 import com.example.inventory.ui.home.HomeEmptyDestination
 import com.example.inventory.ui.home.HomeEmptyScreen
@@ -29,22 +35,29 @@ import com.example.inventory.ui.item.ItemEditDestination
 import com.example.inventory.ui.item.ItemEditScreen
 import com.example.inventory.ui.item.ItemEntryDestination
 import com.example.inventory.ui.item.ItemEntryScreen
+import com.example.inventory.ui.settings.SettingsDestination
+import com.example.inventory.ui.settings.SettingsEmptyDestination
+import com.example.inventory.ui.settings.SettingsEmptyScreen
+import com.example.inventory.ui.settings.SettingsScreen
 import com.microsoft.device.dualscreen.twopanelayout.Screen
 import com.microsoft.device.dualscreen.twopanelayout.TwoPaneLayoutNav
 import com.microsoft.device.dualscreen.twopanelayout.TwoPaneMode
 import com.microsoft.device.dualscreen.twopanelayout.twopanelayoutnav.composable
+import com.microsoft.device.dualscreen.windowstate.WindowState
 
 /**
  * Provides Navigation graph for the application.
  */
 @Composable
 fun InventoryNavHost(
+    windowState: WindowState,
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    viewModel: InventoryViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     TwoPaneLayoutNav(
         navController = navController,
-        paneMode = TwoPaneMode.HorizontalSingle,
+        paneMode = viewModel.inventoryUiState.paneMode,
         singlePaneStartDestination = HomeDestination.route,
         pane1StartDestination = HomeDestination.route,
         pane2StartDestination = HomeEmptyDestination.route,
@@ -60,6 +73,13 @@ fun InventoryNavHost(
                 },
                 navigateToItemUpdate = {
                     navController.navigateTo("${ItemDetailsDestination.route}/${it}", Screen.Pane2)
+                },
+                navigateToSettings = {
+                    if (windowState.foldIsSeparating)
+                        navController.navigateTo(SettingsEmptyDestination.route, Screen.Pane2)
+                    else
+                        viewModel.setPaneMode(TwoPaneMode.SinglePane)
+                    navController.navigateTo(SettingsDestination.route, Screen.Pane1)
                 },
                 modifier = Modifier.weight(.45f)
             )
@@ -107,6 +127,19 @@ fun InventoryNavHost(
                 modifier = Modifier.weight(.55f),
                 itemId = itemId
             )
+        }
+        composable(route = SettingsDestination.route) {
+            SettingsScreen(
+                navigateBack = {
+                    navController.navigateBack()
+                    if (windowState.foldIsSeparating)
+                        navController.navigateTo(HomeEmptyDestination.route, Screen.Pane2)
+                    else
+                        viewModel.setPaneMode(TwoPaneMode.HorizontalSingle) },
+            )
+        }
+        composable(route = SettingsEmptyDestination.route) {
+            SettingsEmptyScreen( )
         }
     }
 }

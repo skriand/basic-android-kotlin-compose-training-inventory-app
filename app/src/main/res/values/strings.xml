@@ -45,4 +45,5 @@
     <string name="yes">Yes</string>
     <string name="required_fields">*required fields</string>
     <string name="empty_text">Select or add an item</string>
+    <string name="settings_empty">Manage app settings</string>
 </resources>

@@ -1,22 +1,7 @@
-/*
- * Copyright (C) 2023 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.example.inventory.ui.home
+package com.example.inventory.ui.settings
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,9 +18,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -49,7 +31,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inventory.InventoryTopAppBar
@@ -58,63 +39,41 @@ import com.example.inventory.data.Item
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.item.formatedPrice
 import com.example.inventory.ui.navigation.NavigationDestination
-import com.example.inventory.ui.theme.InventoryTheme
 
-object HomeDestination : NavigationDestination {
-    override val route = "home"
-    override val titleRes = R.string.app_name
+object SettingsDestination : NavigationDestination {
+    override val route = "settings"
+    override val titleRes = R.string.settings
 }
 
 /**
- * Entry route for Home screen
+ * Entry route for Settings screen
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun HomeScreen(
-    navigateToItemEntry: () -> Unit,
-    navigateToItemUpdate: (Int) -> Unit,
-    navigateToSettings: () -> Unit,
+fun SettingsScreen(
+    navigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val homeUiState by viewModel.homeUiState.collectAsState()
+    //val settingsUiState by viewModel.settingsUiState.collectAsState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
+    BackHandler(enabled = true, onBack = { navigateBack() })
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             InventoryTopAppBar(
-                title = stringResource(HomeDestination.titleRes),
-                canNavigateBack = false,
+                title = stringResource(SettingsDestination.titleRes),
+                canNavigateBack = true,
+                navigateBack = navigateBack,
                 scrollBehavior = scrollBehavior,
-                actions = {
-                    IconButton(onClick = { navigateToSettings() }) {
-                        Icon(
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = stringResource(id = R.string.settings),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = navigateToItemEntry,
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.item_entry_title)
-                )
-            }
-        },
     ) { innerPadding ->
-        HomeBody(
-            itemList = homeUiState.itemList,
-            onItemClick = navigateToItemUpdate,
+        SettingsBody(
+            settingsList = listOf(),
+            onItemClick = {  },
             modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize()
@@ -123,22 +82,22 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HomeBody(
-    itemList: List<Item>, onItemClick: (Int) -> Unit, modifier: Modifier = Modifier
+private fun SettingsBody(
+    settingsList: List<Item>, onItemClick: (Int) -> Unit, modifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        if (itemList.isEmpty()) {
+        if (settingsList.isEmpty()) {
             Text(
                 text = stringResource(R.string.no_item_description),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge
             )
         } else {
-            InventoryList(
-                itemList = itemList,
+            SettingsList(
+                settingsList = settingsList,
                 onItemClick = { onItemClick(it.id) },
                 modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small))
             )
@@ -147,12 +106,12 @@ private fun HomeBody(
 }
 
 @Composable
-private fun InventoryList(
-    itemList: List<Item>, onItemClick: (Item) -> Unit, modifier: Modifier = Modifier
+private fun SettingsList(
+    settingsList: List<Item>, onItemClick: (Item) -> Unit, modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier = modifier) {
-        items(items = itemList, key = { it.id }) { item ->
-            InventoryItem(item = item,
+        items(items = settingsList, key = { it.id }) { item ->
+            SettingsItem(item = item,
                 modifier = Modifier
                     .padding(dimensionResource(id = R.dimen.padding_small))
                     .clickable { onItemClick(item) })
@@ -161,7 +120,7 @@ private fun InventoryList(
 }
 
 @Composable
-private fun InventoryItem(
+private fun SettingsItem(
     item: Item, modifier: Modifier = Modifier
 ) {
     Card(
@@ -189,67 +148,5 @@ private fun InventoryItem(
                 style = MaterialTheme.typography.titleMedium
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeBodyPreview() {
-    InventoryTheme {
-        HomeBody(listOf(
-            Item(
-                1,
-                "Game",
-                100.0,
-                20,
-                "Cat",
-                "pur@myau.com",
-                "+79990000000"
-            ),
-            Item(
-                2,
-                "Pen",
-                200.0,
-                30,
-                "Cat",
-                "pur@myau.com",
-                "+79990000000"
-            ),
-            Item(
-                3,
-                "TV",
-                300.0,
-                50,
-                "Cat",
-                "pur@myau.com",
-                "+79990000000"
-            )
-        ), onItemClick = {})
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HomeBodyEmptyListPreview() {
-    InventoryTheme {
-        HomeBody(listOf(), onItemClick = {})
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun InventoryItemPreview() {
-    InventoryTheme {
-        InventoryItem(
-            Item(
-                1,
-                "Game",
-                100.0,
-                20,
-                "Cat",
-                "pur@myau.com",
-                "+79990000000"
-            ),
-        )
     }
 }

@@ -35,14 +35,16 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.inventory.R.string
 import com.example.inventory.ui.navigation.InventoryNavHost
+import com.microsoft.device.dualscreen.twopanelayout.TwoPaneMode
+import com.microsoft.device.dualscreen.windowstate.WindowState
 
 /**
  * Top level composable that represents screens for the application.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun InventoryApp(navController: NavHostController = rememberNavController()) {
-    InventoryNavHost(navController = navController)
+fun InventoryApp(windowState: WindowState, navController: NavHostController = rememberNavController()) {
+    InventoryNavHost(windowState = windowState, navController = navController)
 }
 
 /**
