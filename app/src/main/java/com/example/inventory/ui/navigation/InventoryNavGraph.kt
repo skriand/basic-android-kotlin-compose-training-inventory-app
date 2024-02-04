@@ -16,14 +16,10 @@
 
 package com.example.inventory.ui.navigation
 
-import android.util.Log
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavOptionsBuilder
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.home.HomeDestination
 import com.example.inventory.ui.home.HomeEmptyDestination
@@ -110,7 +106,12 @@ fun InventoryNavHost(
                         Screen.Pane2
                     )
                 },
-                navigateBack = { navController.navigateUpTo(HomeEmptyDestination.route) },
+                navigateBack = {
+                    navController.navigateTo(
+                        HomeEmptyDestination.route,
+                        Screen.Pane2
+                    )
+                },
                 modifier = Modifier.weight(.55f),
                 itemId = itemId
             )
@@ -129,17 +130,24 @@ fun InventoryNavHost(
             )
         }
         composable(route = SettingsDestination.route) {
+            if (windowState.foldIsSeparating) {
+                viewModel.setPaneMode(TwoPaneMode.HorizontalSingle)
+                navController.navigateTo(SettingsEmptyDestination.route, Screen.Pane2)
+            }
             SettingsScreen(
                 navigateBack = {
-                    navController.navigateBack()
+                    viewModel.setPaneMode(TwoPaneMode.HorizontalSingle)
+                    navController.navigateTo(HomeDestination.route, Screen.Pane1)
                     if (windowState.foldIsSeparating)
                         navController.navigateTo(HomeEmptyDestination.route, Screen.Pane2)
-                    else
-                        viewModel.setPaneMode(TwoPaneMode.HorizontalSingle) },
+                },
             )
         }
         composable(route = SettingsEmptyDestination.route) {
-            SettingsEmptyScreen( )
+            if (isSinglePane)
+                navController.navigateTo(SettingsDestination.route, Screen.Pane1)
+            else
+                SettingsEmptyScreen()
         }
     }
 }

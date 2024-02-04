@@ -26,8 +26,14 @@ import com.example.inventory.ui.theme.InventoryTheme
 import com.microsoft.device.dualscreen.windowstate.rememberWindowState
 
 class MainActivity : ComponentActivity() {
+    private lateinit var sharingShortcutsManager: SharingShortcutsManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        sharingShortcutsManager = SharingShortcutsManager().also {
+            it.pushDirectShareTargets(this)
+        }
+
         setContent {
             InventoryTheme {
                 // A surface container using the 'background' color from the theme

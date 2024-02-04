@@ -27,7 +27,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.inventory"
-        minSdk = 24
+        minSdk = 25
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -81,6 +81,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
     implementation("androidx.navigation:navigation-compose:2.6.0")
     implementation("com.microsoft.device.dualscreen:twopanelayout:1.0.1-alpha08")
+    implementation("androidx.sharetarget:sharetarget:1.2.0")
 
     //Room
     implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
