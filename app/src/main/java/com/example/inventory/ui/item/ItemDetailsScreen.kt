@@ -28,6 +28,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -88,6 +89,7 @@ fun ItemDetailsScreen(
     Scaffold(
         topBar = {
             InventoryTopAppBar(
+                small = true,
                 title = stringResource(ItemDetailsDestination.titleRes),
                 canNavigateBack = true,
                 navigateBack = navigateBack,
@@ -116,6 +118,13 @@ fun ItemDetailsScreen(
                                 imageVector = Icons.Filled.Share,
                                 contentDescription = stringResource(id = R.string.share),
                             )
+                    }
+                    IconButton(onClick = { }) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = stringResource(id = R.string.more),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             )

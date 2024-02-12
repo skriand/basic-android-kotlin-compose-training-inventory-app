@@ -129,7 +129,7 @@ fun InventoryNavHost(
                 twoPaneBackStack.arguments?.getString(ItemEditDestination.itemIdArg).toString()
 
             ItemEditScreen(
-                navigateBack = { navController.navigateBack() },
+                navigateBack = { navController.navigateUpTo("${ItemDetailsDestination.route}/$itemId") },
                 modifier = Modifier.weight(.55f),
                 itemId = itemId
             )

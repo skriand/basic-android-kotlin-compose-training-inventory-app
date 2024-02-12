@@ -27,6 +27,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -60,6 +61,34 @@ fun InventoryTopAppBar(
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     CenterAlignedTopAppBar(
+        title = { Text(title) },
+        modifier = modifier,
+        scrollBehavior = scrollBehavior,
+        navigationIcon = {
+            if (canNavigateBack) {
+                IconButton(onClick = navigateBack) {
+                    Icon(
+                        imageVector = Filled.ArrowBack,
+                        contentDescription = stringResource(string.back_button)
+                    )
+                }
+            }
+        },
+        actions = actions
+    )
+}
+
+@Composable
+fun InventoryTopAppBar(
+    small: Boolean,
+    title: String,
+    canNavigateBack: Boolean,
+    modifier: Modifier = Modifier,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    navigateBack: () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    TopAppBar(
         title = { Text(title) },
         modifier = modifier,
         scrollBehavior = scrollBehavior,

@@ -55,4 +55,5 @@
     <string name="hide_sensitive_data_description">Supplier\'s data will be hidden when viewing item</string>
     <string name="prohibit_sending_data">Prohibit sending data from app</string>
     <string name="prohibit_sending_data_description">Share button will be disabled when viewing item</string>
+    <string name="more">More</string>
 </resources>
