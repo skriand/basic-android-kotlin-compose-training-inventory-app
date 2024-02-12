@@ -82,6 +82,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.6.0")
     implementation("com.microsoft.device.dualscreen:twopanelayout:1.0.1-alpha08")
     implementation("androidx.sharetarget:sharetarget:1.2.0")
+    implementation("androidx.security:security-crypto:1.0.0")
 
     //Room
     implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")

@@ -16,10 +16,13 @@
 
 package com.example.inventory.ui.item
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import com.example.inventory.data.Item
 import com.example.inventory.data.ItemsRepository
 import java.text.NumberFormat
@@ -34,6 +37,29 @@ class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewMod
      */
     var itemUiState by mutableStateOf(ItemUiState())
         private set
+
+    fun getEncryptedSharedPrefs(context: Context) {
+        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            "preferences",
+            masterKeyAlias,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        val supplierStr = sharedPreferences.getString("supplier", "")
+        val emailStr = sharedPreferences.getString("email", "")
+        val phoneStr = sharedPreferences.getString("phone", "")
+        val useBool = sharedPreferences.getBoolean("use", true)
+
+        itemUiState = if (useBool) ItemUiState(
+            itemDetails = ItemDetails(
+                supplier = supplierStr!!,
+                email = emailStr!!,
+                phone = phoneStr!!,
+            )
+        ) else ItemUiState()
+    }
 
     /**
      * Updates the [itemUiState] with the value provided in the argument. This method also triggers
@@ -133,3 +159,13 @@ fun ItemDetails.toFormatedString(): String {
             "Email: $email\n" +
             "Phone: $phone\n"
 }
+
+fun ItemDetails.hideSupplier(): ItemDetails = ItemDetails(
+    id = id,
+    name = name,
+    price = price,
+    quantity = quantity,
+    supplier = supplier.replace(Regex("."), "\u2588"),
+    email = email.replace(Regex("."), "\u2588"),
+    phone = phone.replace(Regex("."), "\u2588")
+)

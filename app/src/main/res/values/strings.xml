@@ -47,4 +47,12 @@
     <string name="empty_text">Select or add an item</string>
     <string name="settings_empty">Manage app settings</string>
     <string name="title_activity_select_supplier">Suppliers</string>
+    <string name="supplier_default_values">Supplier default values</string>
+    <string name="supplier_default_values_saved">Supplier default values saved</string>
+    <string name="use_default_values">Use default values</string>
+    <string name="use_default_values_description">Default values for supplier will be used when creating item</string>
+    <string name="hide_sensitive_data">Hide sensitive data</string>
+    <string name="hide_sensitive_data_description">Supplier\'s data will be hidden when viewing item</string>
+    <string name="prohibit_sending_data">Prohibit sending data from app</string>
+    <string name="prohibit_sending_data_description">Share button will be disabled when viewing item</string>
 </resources>

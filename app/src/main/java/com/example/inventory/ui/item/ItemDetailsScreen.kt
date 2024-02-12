@@ -79,10 +79,10 @@ fun ItemDetailsScreen(
     itemId: String,
     viewModel: ItemDetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    viewModel.setItemId(itemId)
+    val context = LocalContext.current
+    viewModel.setItemId(itemId, context)
     val uiState = viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
 
     BackHandler(enabled = true, onBack = { navigateBack() })
     Scaffold(
@@ -104,12 +104,18 @@ fun ItemDetailsScreen(
                             context,
                             uiState.value.itemDetails.toFormatedString()
                         )
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.Share,
-                            contentDescription = stringResource(id = R.string.share),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
+                    }, enabled = uiState.value.isShareable) {
+                        if (uiState.value.isShareable)
+                            Icon(
+                                imageVector = Icons.Filled.Share,
+                                contentDescription = stringResource(id = R.string.share),
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        else
+                            Icon(
+                                imageVector = Icons.Filled.Share,
+                                contentDescription = stringResource(id = R.string.share),
+                            )
                     }
                 }
             )

@@ -22,6 +22,8 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import com.example.inventory.data.ItemsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -44,11 +46,27 @@ class ItemDetailsViewModel(
 
     lateinit var uiState: StateFlow<ItemDetailsUiState>
 
-    fun setItemId(itemId: String) {
+    fun setItemId(itemId: String, context: Context) {
+        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
+        val sharedPreferences = EncryptedSharedPreferences.create(
+            "preferences",
+            masterKeyAlias,
+            context,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+        val hideBool = sharedPreferences.getBoolean("hide", false)
+        val prohibitBool = sharedPreferences.getBoolean("prohibit", false)
+
         uiState = itemsRepository.getItemStream(itemId.toInt())
             .filterNotNull()
             .map {
-                ItemDetailsUiState(outOfStock = it.quantity <= 0, itemDetails = it.toItemDetails())
+                ItemDetailsUiState(
+                    isShareable = !prohibitBool,
+                    outOfStock = it.quantity <= 0,
+                    itemDetails = if (!hideBool) it.toItemDetails() else it.toItemDetails()
+                        .hideSupplier()
+                )
             }.stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
@@ -82,6 +100,7 @@ class ItemDetailsViewModel(
  * UI state for ItemDetailsScreen
  */
 data class ItemDetailsUiState(
+    val isShareable: Boolean = true,
     val outOfStock: Boolean = true,
     val itemDetails: ItemDetails = ItemDetails()
 )
