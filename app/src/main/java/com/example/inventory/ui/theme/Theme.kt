@@ -116,12 +116,8 @@ fun InventoryTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            if (darkTheme) {
-                window.statusBarColor = colorScheme.primary.toArgb()
-            } else {
-                window.statusBarColor = Color.Transparent.toArgb()
-            }
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            window.statusBarColor = colorScheme.background.toArgb()
+            window.navigationBarColor = colorScheme.background.toArgb()
         }
     }
 
